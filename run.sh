@@ -46,14 +46,23 @@ fi
 mkdir -p $tmp_root
 
 # setdar=1:1,
+n_files=0
+for file in $source_dir/*; do
+  n_files=$((n_files + 1))
+done
+
+i=1
 for file in $source_dir/*; do
   file="$(echo $file | rev | cut -d '/' -f1 | rev)"
   output_file=$(echo $file | cut -d '.' -f1).mp4
 
-  ffmpeg -fflags +genpts -i $source_dir/$file \
+  echo handling $file \($i / $n_files\)
+  i=$((i + 1))
+
+  ffmpeg -fflags +genpts -i $source_dir/$file -f lavfi -t 0.1 -i anullsrc \
     -filter_complex " \
       [0:v]scale=$aspect_ratio:force_original_aspect_ratio=decrease,pad=$aspect_ratio:(ow-iw)/2:(oh-ih)/2,fps=30,setpts=PTS-STARTPTS[vout]; \
-      [0:a]aformat=sample_fmts=fltp:channel_layouts=stereo,aresample=44100[aout] \
+      aformat=sample_fmts=fltp:channel_layouts=stereo,aresample=44100[aout]
     " \
     -map "[vout]" -map "[aout]" -c:v $encoder -c:a aac -strict experimental $tmp_root/$output_file
   echo "file '$output_file'" >> $tmp_root/index.txt
