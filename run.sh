@@ -16,7 +16,7 @@ if test ! -d "$destination_dir"; then
   mkdir -p "$destination_dir"
 fi
 
-tmp_root=/tmp/wambala
+tmp_root="/tmp/wambala/$(echo $source_dir | rev | cut -d '/' -f1 | rev)"
 aspect_ratio="1920:1080"
 encoder='h264_nvenc'
 
